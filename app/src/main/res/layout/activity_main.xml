@@ -24,14 +24,11 @@
 
     <TextView
         android:id="@+id/location_address_view"
-        android:text="hrh"
+        android:text="My District"
+        android:layout_below="@+id/fetch_address_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="@dimen/text_margin_top"
-        android:textSize="@dimen/default_text_size" />
+        android:layout_margin="10dp" />
 
     <TextView
         android:layout_below="@+id/location_address_view"
@@ -39,6 +36,6 @@
         android:layout_margin="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="hello"
+        android:text="State and PrayerTime"
          />
 </RelativeLayout>
