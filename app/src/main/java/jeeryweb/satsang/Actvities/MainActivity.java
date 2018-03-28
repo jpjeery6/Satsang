@@ -1,6 +1,7 @@
 package jeeryweb.satsang.Actvities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Geocoder;
@@ -21,13 +22,16 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import jeeryweb.satsang.BuildConfig;
+import jeeryweb.satsang.Data.FileReader;
 import jeeryweb.satsang.R;
 import jeeryweb.satsang.Services.FetchAddressIntentService;
 import jeeryweb.satsang.Utilities.ConstantsForGeocoding;
@@ -55,9 +59,11 @@ public class MainActivity extends AppCompatActivity  {
     private AddressResultReceiver mResultReceiver;
 
     //widgets
-    private TextView mLocationAddressTextView;
+    private TextView mLocationAddressTextView, mStateName;
     private ProgressBar mProgressBar;
     private Button mFetchAddressButton;
+    FileReader fileReader;
+    Context c;
 
 //Methods*******************************************************************************************
     @Override
@@ -70,7 +76,9 @@ public class MainActivity extends AppCompatActivity  {
         mLocationAddressTextView = (TextView) findViewById(R.id.location_address_view);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mFetchAddressButton = (Button) findViewById(R.id.fetch_address_button);
-
+        mStateName = (TextView) findViewById(R.id.prayer_time_view);
+        fileReader = new FileReader();
+        c = this;
         // Set defaults, then update using values stored in the Bundle.
         mAddressRequested = false;
         mAddressOutput = "";
@@ -117,6 +125,8 @@ public class MainActivity extends AppCompatActivity  {
      */
     @SuppressWarnings("unused")
     public void fetchAddressButtonHandler(View view) {
+
+
         if (mLastLocation != null) {
             startIntentService();
             Log.e("start","service started on button press");
@@ -261,7 +271,24 @@ public class MainActivity extends AppCompatActivity  {
 
             // Display the address string or an error message sent from the intent service.
             mAddressOutput = resultData.getString(ConstantsForGeocoding.RESULT_DATA_KEY);
+
             Log.e(TAG+":::",mAddressOutput);
+            fileReader.read1(c);
+            fileReader.read2(c);
+
+           String res = fileReader.queryWithDistrict(mAddressOutput);
+           Log.e("data",res);
+
+           SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+           String currentDate = simpleDateFormat.format(new Date());
+
+           int month = Integer.parseInt(currentDate.split("-")[1]);
+
+           Log.e("data",currentDate+" "+month);
+           String prayingTime = fileReader.queryWithState(res,month);
+
+            mStateName.setText(res + " "+ prayingTime);
+
             displayAddressOutput();
 
             // Show a toast message if an address was found.
