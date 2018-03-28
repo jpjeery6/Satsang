@@ -24,6 +24,7 @@
 
     <TextView
         android:id="@+id/location_address_view"
+        android:text="hrh"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -31,4 +32,13 @@
         android:layout_alignParentTop="true"
         android:layout_marginTop="@dimen/text_margin_top"
         android:textSize="@dimen/default_text_size" />
+
+    <TextView
+        android:layout_below="@+id/location_address_view"
+        android:id="@+id/prayer_time_view"
+        android:layout_margin="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="hello"
+         />
 </RelativeLayout>
