@@ -1,7 +1,6 @@
 package jeeryweb.satsang.Data;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -51,7 +50,7 @@ public class FileReader {
         }
 
         districtsInState =  resultList;
-        Log.e("Data", (String)districtsInState.get(0));
+
     }
 
     public void read2(Context c){
@@ -83,7 +82,7 @@ public class FileReader {
         }
 
         prayerTimeInState =  resultList;
-        Log.e("Data", (String)prayerTimeInState.get(0));
+
     }
 
     public String queryWithDistrict(String d){
@@ -94,7 +93,7 @@ public class FileReader {
 
         for(int i=0;i<po;i++){
             String row= String.valueOf(districtsInState.get(i));
-            Log.e("one row:",row);
+
 
             String row_array[] = row.split(",");
             for(String s:row_array){
@@ -105,7 +104,7 @@ public class FileReader {
                 }
             }
         }
-        return null;
+        return "NA";
     }
 
     public String queryWithState(String stateName, int month){
@@ -129,6 +128,6 @@ public class FileReader {
             }
 
         }
-        return null;
+        return "NA";
     }
 }
