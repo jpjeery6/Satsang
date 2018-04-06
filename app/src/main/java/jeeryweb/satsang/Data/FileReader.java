@@ -23,8 +23,6 @@ public class FileReader {
     public void read1(Context c){
         InputStream inputStream = c.getResources().openRawResource(R.raw.district);
 
-//        InputStream inputStream2 = c.getResources().openRawResource(R.raw.prayer_timing);
-
         List<String> resultList = new ArrayList<String>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         try {
@@ -32,8 +30,6 @@ public class FileReader {
             List<String> r = new ArrayList();
 
             while ((csvLine = reader.readLine()) != null) {
-//               String[] row = csvLine.split(",");
-//                r.add(csvLine.split(","));
                 resultList.add(csvLine);
             }
         }
@@ -51,6 +47,7 @@ public class FileReader {
 
         districtsInState =  resultList;
 
+        //Log.e("Data", (String)districtsInState.get(0));
     }
 
     public void read2(Context c){
@@ -64,8 +61,6 @@ public class FileReader {
             List<String> r = new ArrayList();
 
             while ((csvLine = reader.readLine()) != null) {
-//               String[] row = csvLine.split(",");
-//                r.add(csvLine.split(","));
                 resultList.add(csvLine);
             }
         }
@@ -82,26 +77,30 @@ public class FileReader {
         }
 
         prayerTimeInState =  resultList;
-
+        //Log.e("Data", (String)prayerTimeInState.get(0));
     }
 
     public String queryWithDistrict(String d){
 
         int po=districtsInState.size();
-
-
+        Log.e("entry in db= ",String.valueOf(po));
+        String previous = null;
 
         for(int i=0;i<po;i++){
             String row= String.valueOf(districtsInState.get(i));
 
+            //Log.e("row", row);
 
-            String row_array[] = row.split(",");
-            for(String s:row_array){
-//                Log.e("Data",s);
+            String p = row.split(",")[0];
+            if(p.length()!=0)previous = p;
 
-                if(s.contains(d)){
-                    return row_array[0];
-                }
+            if(row.contains(d)){
+                String row_array[] = row.split(",");
+
+                if(row_array[0].length()==0 && previous!=null)
+                    return previous;
+                //Log.e("StateName", row_array[0]);
+                return row_array[0];
             }
         }
         return "NA";
