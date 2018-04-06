@@ -214,6 +214,8 @@ public class MainActivity extends AppCompatActivity  {
                     public void onSuccess(Location location) {
                         if (location == null) {
                             Log.w(TAG, "onSuccess:null");
+
+                            showSnackbar("Cannot get location! Please try again later");
                             return;
                         }
 
@@ -504,12 +506,13 @@ public class MainActivity extends AppCompatActivity  {
 
     }
     public void loadGoogleMap(View view){
-        String co_or = "geo:"+mLastLocation.getLatitude()+','+mLastLocation.getLongitude();
+        String co_or = "geo:"+mLastLocation.getLatitude()+','+mLastLocation.getLongitude()+"?q=Satsang";
         Uri gmmIntentUri = Uri.parse(co_or);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
         if (mapIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(mapIntent);
+
         }
     }
 

@@ -8,6 +8,9 @@ import android.util.Log;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -26,7 +29,7 @@ public class AlarmSetter {
     private PendingIntent alarmIntent;
     private int requestCode;
 
-    final private String TAG="AlarmFuck";
+    final private String TAG="AlarmDebug";
     public AlarmSetter(Context c){
         this._c = c;
         sharedPref = new SharedPreferenceManager(_c);
@@ -57,12 +60,17 @@ public class AlarmSetter {
                 int h = Integer.parseInt(s.split(":")[0]);
                 int m = Integer.parseInt(s.split(":")[1]);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-                String temp = h+":"+m;
-                Date date = sdf.parse(temp);
+                String alarmTimeString = h+":"+m;
+                LocalTime alarmTime = LocalTime.parse(alarmTimeString);
+                ZoneId zone = ZoneId.of("Asia/Kolkata");
+                long alarmTimeMillis = LocalDate.now(zone)
+                        .atTime(alarmTime)
+                        .atZone(zone)
+                        .toInstant()
+                        .toEpochMilli();
 
                 alarmMgr.set(AlarmManager.RTC_WAKEUP,
-                        Calendar.getInstance().getTimeInMillis()+  date.getTime(), alarmIntent);
+                        alarmTimeMillis, alarmIntent);
 
                 sharedPref.setflagA(2);
                 //Toast.makeText(_c, "Alarm set for your next Evening time prayer",Toast.LENGTH_SHORT).show();
@@ -77,12 +85,17 @@ public class AlarmSetter {
                 int h = Integer.parseInt(s.split(":")[0]);
                 int m = Integer.parseInt(s.split(":")[1]);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-                String temp = h+":"+m;
-                Date date = sdf.parse(temp);
+                String alarmTimeString = h+":"+m;
+                LocalTime alarmTime = LocalTime.parse(alarmTimeString);
+                ZoneId zone = ZoneId.of("Asia/Kolkata");
+                long alarmTimeMillis = LocalDate.now(zone)
+                        .atTime(alarmTime)
+                        .atZone(zone)
+                        .toInstant()
+                        .toEpochMilli();
 
                 alarmMgr.set(AlarmManager.RTC_WAKEUP,
-                        Calendar.getInstance().getTimeInMillis()+  date.getTime(), alarmIntent);
+                        alarmTimeMillis, alarmIntent);
 
                 sharedPref.setflagA(1);
               //  Toast.makeText(_c, "Alarm set for your next Morning time prayer",Toast.LENGTH_SHORT).show();
@@ -117,16 +130,20 @@ public class AlarmSetter {
             //Toast.makeText(_c, "Alarm set for your next Evening time Prayer",Toast.LENGTH_SHORT).show();
             Log.e(TAG, "evening alarm called at on loc changed "+h);
         }
+        String alarmTimeString = h+":"+m;
+        LocalTime alarmTime = LocalTime.parse(alarmTimeString);
+        ZoneId zone = ZoneId.of("Asia/Kolkata");
+        long alarmTimeMillis = LocalDate.now(zone)
+                .atTime(alarmTime)
+                .atZone(zone)
+                .toInstant()
+                .toEpochMilli();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-        String temp = h+":"+m;
-
-        Date date = sdf.parse(temp);
         alarmMgr = (AlarmManager)_c.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
         alarmIntent = PendingIntent.getBroadcast(_c, requestCode, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP,
-                Calendar.getInstance().getTimeInMillis()+  date.getTime(), alarmIntent);
+                alarmTimeMillis,  alarmIntent);
 
         Log.e(TAG, "at "+Calendar.getInstance().getTimeInMillis());
 

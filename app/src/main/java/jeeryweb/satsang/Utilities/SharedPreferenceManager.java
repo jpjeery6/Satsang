@@ -42,7 +42,7 @@ public class SharedPreferenceManager {
     }
     public String getStateName()
     {
-        return pref.getString(STATE_NAME, null);
+        return pref.getString(STATE_NAME, "NA");
     }
 
     public void SaveDistName(String dist)
@@ -52,7 +52,7 @@ public class SharedPreferenceManager {
     }
     public String getDistName()
     {
-        return pref.getString(DIST_NAME, null);
+        return pref.getString(DIST_NAME, "NA");
     }
 
     public void SavePrayTime(String time)
@@ -62,7 +62,7 @@ public class SharedPreferenceManager {
     }
     public String getPrayTime()
     {
-        return pref.getString(Pray_Time, null);
+        return pref.getString(Pray_Time, "NA");
     }
 
     //For alarm purposes

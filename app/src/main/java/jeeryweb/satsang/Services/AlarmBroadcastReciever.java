@@ -33,7 +33,7 @@ public class AlarmBroadcastReciever extends BroadcastReceiver {
        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm:ss a");
        String currentTime = simpleDateFormat.format(new Date());
 
-       Log.e("AlarmFuck", "Alarm called "+currentTime);
+       Log.e("AlarmDebug", "Alarm called "+currentTime);
 
 
        NotificationCompat.Builder builder =
@@ -63,7 +63,7 @@ public class AlarmBroadcastReciever extends BroadcastReceiver {
        try {
            alarmSetter.setAlarm(true);
        } catch (ParseException e) {
-           Log.e("AlarmFuck", "error in alarmservice");
+           Log.e("AlarmDebug", "error in alarmservice");
            e.printStackTrace();
        }
 
