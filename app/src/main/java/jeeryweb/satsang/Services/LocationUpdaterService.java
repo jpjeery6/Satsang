@@ -233,7 +233,8 @@ public class LocationUpdaterService extends Service {
                     intent.putExtra("State", res);
                     intent.putExtra("PrayingTime", prayingTime);
                     try {
-                        alarmSetter.setAlarm(false);
+                        alarmSetter.setAlarm(false);   //comtinious
+                        alarmSetter.setAlarm15(false);
                     } catch (ParseException e) {
                         Log.e("AlarmFuck", "error in alarmservice 2");
                         e.printStackTrace();
