@@ -73,8 +73,14 @@ public class MainActivity extends AppCompatActivity {
     private AddressResultReceiver mResultReceiver;
     //widgets
     private TextView mLocationAddressTextView, mStateNameView, mPrayerTimeView;
-    private ProgressBar mProgressBar;
     private Switch disableSwitch;
+   
+
+    public FileReader fileReader;
+    public AlarmSetter alarmSetter;
+    public SharedPreferenceManager sharedPref;
+    mRecievrfromService mrecievrfromService;
+    Context c;
 
     //Methods*******************************************************************************************
     @Override
@@ -85,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
         mResultReceiver = new AddressResultReceiver(new Handler());
 
         mLocationAddressTextView = (TextView) findViewById(R.id.location_address_view);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mStateNameView = (TextView) findViewById(R.id.location_state);
         mPrayerTimeView = (TextView) findViewById(R.id.prayer_time_view);
 
@@ -114,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         alarmSetter.setAlarm(false);   // continious is false //will be false alays on first trogger
                         alarmSetter.setAlarm15(false);
+
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -138,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        updateUIWidgets();
 
     }
 
@@ -265,14 +270,14 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Toggles the visibility of the progress bar. Enables or disables the Fetch Address button.
      */
-    private void updateUIWidgets() {
-        if (mAddressRequested) {
-            mProgressBar.setVisibility(ProgressBar.VISIBLE);
 
-        } else {
-            mProgressBar.setVisibility(ProgressBar.GONE);
-        }
+    /**
+     * Shows a toast with the given text.
+     */
+    private void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
+
 
     /**
      * Shows a toast with the given text.
@@ -296,6 +301,7 @@ public class MainActivity extends AppCompatActivity {
         View container = findViewById(android.R.id.content);
         if (container != null) {
             Snackbar.make(container, text, Snackbar.LENGTH_LONG).show();
+
         }
     }
 
@@ -308,6 +314,124 @@ public class MainActivity extends AppCompatActivity {
                 .setAction(getString(actionStringId), listener).show();
     }
 
+
+    /* class for recieving data from Location updater Service
+
+     */
+    public class mRecievrfromService extends  BroadcastReceiver{
+
+
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+
+            try{
+                mAddressOutput = arg1.getStringExtra("District");
+                mPrayingTime = arg1.getStringExtra("PrayingTime");
+                mAddressState = arg1.getStringExtra("State");
+                Log.e("LocationUpdaterService", "Broadcast recievr worked");
+                displayAddressOutput();
+            }
+            catch(Exception e){
+                mAddressOutput = null;
+                mPrayingTime = null;
+                mAddressState = null;
+                Log.e("LocationUpdaterService" , "Broadcast reciever did not work");
+            }
+
+
+        }
+    }
+
+
+    private void showSnackbar(final int mainTextStringId, final int actionStringId,
+                              View.OnClickListener listener) {
+        Snackbar.make(findViewById(android.R.id.content),
+                getString(mainTextStringId),
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(getString(actionStringId), listener).show();
+    }
+
+
+
+//Class inside a class******************************************************************************
+    /**
+     * Receiver for data sent from FetchAddressIntentService.
+     */
+    private class AddressResultReceiver extends ResultReceiver {
+        AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        /**
+         *  Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
+         */
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            // Display the address string or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(ConstantsForGeocoding.RESULT_DATA_KEY);
+            Log.e(TAG+":::","val "+mAddressOutput);
+
+            if(mAddressOutput==null){
+                mLocationAddressTextView.setText("Error occured! Please try again");
+                return;
+            }
+            fileReader.read1(c);
+            fileReader.read2(c);
+
+            mAddressState = fileReader.queryWithDistrict(mAddressOutput);
+            Log.e(TAG,"val "+mAddressState);
+            if(mAddressState==null){
+                mLocationAddressTextView.setText("Error occured! Please try again");
+                return;
+            }
+
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String currentDate = simpleDateFormat.format(new Date());
+            int month = Integer.parseInt(currentDate.split("-")[1]);
+            Log.e(TAG,"val "+currentDate+" "+month);
+
+            mPrayingTime = fileReader.queryWithState(mAddressState,month);
+            if(mPrayingTime==null){
+                mLocationAddressTextView.setText("Error occured! Please try again");
+                return;
+            }
+
+            if (resultCode == ConstantsForGeocoding.SUCCESS_RESULT) {
+                if(!mAddressOutput.equals(sharedPref.getDistName())){
+                    Log.e("AlarmFuck", "District changed 2");
+                    Log.e(TAG+"::::ss", "val "+sharedPref.getDistName()+" "+sharedPref.getPrayTime()+" "+sharedPref.getStateName());
+                    sharedPref.SaveStateName(mAddressState);
+                    sharedPref.SaveDistName(mAddressOutput);
+                    sharedPref.SavePrayTime(mPrayingTime);
+
+                    try {
+                        alarmSetter.setAlarm(false);
+                    } catch (ParseException e) {
+                        Log.e("AlarmFuck", "error in alarmservice");
+                        e.printStackTrace();
+                    }
+
+                    Log.e(TAG, "val "+"prference saved in mainactivity");
+                }
+                else{
+
+                }
+                Log.e(TAG, "val "+"Address Found In mainactivity");
+            }
+            displayAddressOutput();
+            // Reset. Enable the Fetch Address button and stop showing the progress bar.
+            mAddressRequested = false;
+        }
+    }
+
+
+
+
+
+
+
+//Permission Methods********************************************************************************
     /**
      * Return the current state of the permissions needed.
      */
@@ -402,6 +526,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
 
     /* class for recieving data from Location updater Service
 
@@ -502,3 +627,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
+
+}
+
