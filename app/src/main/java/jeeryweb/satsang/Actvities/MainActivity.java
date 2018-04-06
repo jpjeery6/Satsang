@@ -44,14 +44,18 @@ import jeeryweb.satsang.Utilities.AlarmSetter;
 import jeeryweb.satsang.Utilities.ConstantsForGeocoding;
 import jeeryweb.satsang.Utilities.SharedPreferenceManager;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity {
 
     //attributes****************************************************************************************
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
     private static final String ADDRESS_REQUESTED_KEY = "address-request-pending";
     private static final String LOCATION_ADDRESS_KEY = "location-address";
-
+    public FileReader fileReader;
+    public AlarmSetter alarmSetter;
+    public SharedPreferenceManager sharedPref;
+    private mRecievrfromService mrecievrfromService;
+    private Context c;
     //Location objects
     private FusedLocationProviderClient mFusedLocationClient;
     private Location mLastLocation;
@@ -67,10 +71,10 @@ public class MainActivity extends AppCompatActivity  {
      * Receiver registered with this activity to get the response from FetchAddressIntentService.
      */
     private AddressResultReceiver mResultReceiver;
-
     //widgets
-    private TextView mLocationAddressTextView, mStateNameView , mPrayerTimeView;
-    private Switch aSwitch;
+    private TextView mLocationAddressTextView, mStateNameView, mPrayerTimeView;
+    private Switch disableSwitch;
+   
 
     public FileReader fileReader;
     public AlarmSetter alarmSetter;
@@ -90,7 +94,7 @@ public class MainActivity extends AppCompatActivity  {
         mStateNameView = (TextView) findViewById(R.id.location_state);
         mPrayerTimeView = (TextView) findViewById(R.id.prayer_time_view);
 
-        aSwitch  =(Switch)findViewById(R.id.simpleSwitch);
+        disableSwitch = (Switch) findViewById(R.id.simpleSwitch);
 
         /*  Initilaize classed */
         fileReader = new FileReader();
@@ -101,23 +105,21 @@ public class MainActivity extends AppCompatActivity  {
 
         //set listener for swicth button
 
-        aSwitch.setChecked(sharedPref.isALarmDisabled());
+        disableSwitch.setChecked(sharedPref.isALarmDisabled());
 
-        aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        disableSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean bChecked) {
                 if (bChecked) {
+                    //alarm disable yes
                     sharedPref.setAlarmDisabled();
 
-                    try {
-                        alarmSetter.setAlarm(false);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
                 } else {
                     sharedPref.unsetAlarmDisabled();
                     try {
-                        alarmSetter.setAlarm(false);
+                        alarmSetter.setAlarm(false);   // continious is false //will be false alays on first trogger
+                        alarmSetter.setAlarm15(false);
+
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -131,7 +133,7 @@ public class MainActivity extends AppCompatActivity  {
         intentFilter.addAction(LocationUpdaterService.MY_ACTION);
         registerReceiver(mrecievrfromService, intentFilter);
 
-        if(!isServiceRunning(LocationUpdaterService.class))
+        if (!isServiceRunning(LocationUpdaterService.class))
             startService(new Intent(getBaseContext(), LocationUpdaterService.class));
 
         c = this;
@@ -144,6 +146,7 @@ public class MainActivity extends AppCompatActivity  {
 
 
     }
+
     private boolean isServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -153,7 +156,6 @@ public class MainActivity extends AppCompatActivity  {
         }
         return false;
     }
-
 
 
     @Override
@@ -229,8 +231,7 @@ public class MainActivity extends AppCompatActivity  {
                         // service after fetching the location.
                         if (mAddressRequested) {
                             startIntentService();
-                        }
-                        else {
+                        } else {
                             startIntentService();
                             Log.e(TAG, "address not requested");
                         }
@@ -248,13 +249,13 @@ public class MainActivity extends AppCompatActivity  {
      * Updates the address in the UI.
      */
     private void displayAddressOutput() {
-        if(mAddressState==null || mPrayingTime==null){
+        if (mAddressState == null || mPrayingTime == null) {
             mLocationAddressTextView.setText("Error in App. Please restart!");
             mStateNameView.setText("Error in App. Please restart!");
             mPrayerTimeView.setText("Error in App. Please restart!");
             return;
         }
-        if(mAddressState=="NA" || mPrayingTime=="NA"){
+        if (mAddressState == "NA" || mPrayingTime == "NA") {
             mLocationAddressTextView.setText(mAddressOutput);
             mStateNameView.setText("No Satasang mandir in your area");
             mPrayerTimeView.setText("Your old prayer time");
@@ -262,13 +263,21 @@ public class MainActivity extends AppCompatActivity  {
         mLocationAddressTextView.setText(mAddressOutput);
         mStateNameView.setText(mAddressState);
         String format[] = mPrayingTime.split(",");
-        String op = "Morning  "+format[0]+"\n"+"Evening "+format[1];
+        String op = "Morning  " + format[0] + "\n" + "Evening " + format[1];
         mPrayerTimeView.setText(op);
     }
 
     /**
      * Toggles the visibility of the progress bar. Enables or disables the Fetch Address button.
      */
+
+    /**
+     * Shows a toast with the given text.
+     */
+    private void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
 
     /**
      * Shows a toast with the given text.
@@ -288,11 +297,11 @@ public class MainActivity extends AppCompatActivity  {
     }
 
 
-
     private void showSnackbar(final String text) {
         View container = findViewById(android.R.id.content);
         if (container != null) {
             Snackbar.make(container, text, Snackbar.LENGTH_LONG).show();
+
         }
     }
 
@@ -330,9 +339,16 @@ public class MainActivity extends AppCompatActivity  {
             }
 
 
-
         }
+    }
 
+
+    private void showSnackbar(final int mainTextStringId, final int actionStringId,
+                              View.OnClickListener listener) {
+        Snackbar.make(findViewById(android.R.id.content),
+                getString(mainTextStringId),
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(getString(actionStringId), listener).show();
     }
 
 
@@ -425,6 +441,9 @@ public class MainActivity extends AppCompatActivity  {
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
 
+
+//Class inside a class******************************************************************************
+
     private void requestPermissions() {
         boolean shouldProvideRationale =
                 ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -433,7 +452,7 @@ public class MainActivity extends AppCompatActivity  {
         // Provide an additional rationale to the user. This would happen if the user denied the
         // request previously, but didn't check the "Don't ask again" checkbox.
         if (shouldProvideRationale) {
-            Log.i(TAG, "val "+"Displaying permission rationale to provide additional context.");
+            Log.i(TAG, "val " + "Displaying permission rationale to provide additional context.");
 
             showSnackbar(R.string.permission_rationale, android.R.string.ok,
                     new View.OnClickListener() {
@@ -447,7 +466,7 @@ public class MainActivity extends AppCompatActivity  {
                     });
 
         } else {
-            Log.i(TAG, "val "+"Requesting permission");
+            Log.i(TAG, "val " + "Requesting permission");
             // Request permission. It's possible this can be auto answered if device policy
             // sets the permission in a given state or the user denied the permission
             // previously and checked "Never ask again".
@@ -457,18 +476,21 @@ public class MainActivity extends AppCompatActivity  {
         }
     }
 
+
+//Permission Methods********************************************************************************
+
     /**
      * Callback received when a permissions request has been completed.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        Log.i(TAG, "val "+"onRequestPermissionResult");
+        Log.i(TAG, "val " + "onRequestPermissionResult");
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (grantResults.length <= 0) {
                 // If user interaction was interrupted, the permission request is cancelled and you
                 // receive empty arrays.
-                Log.i(TAG, "val "+"User interaction was cancelled.");
+                Log.i(TAG, "val " + "User interaction was cancelled.");
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted.
                 getAddress();
@@ -493,8 +515,9 @@ public class MainActivity extends AppCompatActivity  {
         }
 
     }
-    public void loadGoogleMap(View view){
-        String co_or = "geo:"+mLastLocation.getLatitude()+','+mLastLocation.getLongitude()+"?q=Satsang";
+
+    public void loadGoogleMap(View view) {
+        String co_or = "geo:" + mLastLocation.getLatitude() + ',' + mLastLocation.getLongitude() + "?q=Satsang";
         Uri gmmIntentUri = Uri.parse(co_or);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
@@ -504,4 +527,106 @@ public class MainActivity extends AppCompatActivity  {
         }
     }
 
+
+    /* class for recieving data from Location updater Service
+
+    */
+    public class mRecievrfromService extends BroadcastReceiver {
+
+
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+
+            try {
+                mAddressOutput = arg1.getStringExtra("District");
+                mPrayingTime = arg1.getStringExtra("PrayingTime");
+                mAddressState = arg1.getStringExtra("State");
+                Log.e("LocationUpdaterService", "Broadcast recievr worked");
+                displayAddressOutput();
+            } catch (Exception e) {
+                mAddressOutput = null;
+                mPrayingTime = null;
+                mAddressState = null;
+                Log.e("LocationUpdaterService", "Broadcast reciever did not work");
+            }
+
+
+        }
+
+    }
+
+    /**
+     * Receiver for data sent from FetchAddressIntentService.
+     */
+    private class AddressResultReceiver extends ResultReceiver {
+        AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        /**
+         * Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
+         */
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            // Display the address string or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(ConstantsForGeocoding.RESULT_DATA_KEY);
+            Log.e(TAG + ":::", "val " + mAddressOutput);
+
+            if (mAddressOutput == null) {
+                mLocationAddressTextView.setText("Error occured! Please try again");
+                return;
+            }
+            fileReader.read1(c);
+            fileReader.read2(c);
+
+            mAddressState = fileReader.queryWithDistrict(mAddressOutput);
+            Log.e(TAG, "val " + mAddressState);
+            if (mAddressState == null) {
+                mLocationAddressTextView.setText("Error occured! Please try again");
+                return;
+            }
+
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String currentDate = simpleDateFormat.format(new Date());
+            int month = Integer.parseInt(currentDate.split("-")[1]);
+            Log.e(TAG, "val " + currentDate + " " + month);
+
+            mPrayingTime = fileReader.queryWithState(mAddressState, month);
+            if (mPrayingTime == null) {
+                mLocationAddressTextView.setText("Error occured! Please try again");
+                return;
+            }
+
+            if (resultCode == ConstantsForGeocoding.SUCCESS_RESULT) {
+                if (!mAddressOutput.equals(sharedPref.getDistName())) {
+                    Log.e("AlarmFuck", "District changed 2");
+                    Log.e(TAG + "::::ss", "val " + sharedPref.getDistName() + " " + sharedPref.getPrayTime() + " " + sharedPref.getStateName());
+                    sharedPref.SaveStateName(mAddressState);
+                    sharedPref.SaveDistName(mAddressOutput);
+                    sharedPref.SavePrayTime(mPrayingTime);
+
+                    try {
+                        alarmSetter.setAlarm(false);
+                    } catch (ParseException e) {
+                        Log.e("AlarmFuck", "error in alarmservice");
+                        e.printStackTrace();
+                    }
+
+                    Log.e(TAG, "val " + "prference saved in mainactivity");
+                } else {
+
+                }
+                Log.e(TAG, "val " + "Address Found In mainactivity");
+            }
+            displayAddressOutput();
+            // Reset. Enable the Fetch Address button and stop showing the progress bar.
+            mAddressRequested = false;
+            updateUIWidgets();
+        }
+    }
+
 }
+
+}
+

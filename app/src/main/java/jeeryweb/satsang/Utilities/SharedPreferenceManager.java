@@ -21,6 +21,9 @@ public class SharedPreferenceManager {
     private static final String Morning = "Morning_pray_time";
     private static final String AlarmDisabled = "AlarmDisabled";
 
+    private static final String Morning15 = "Morning_pray_time15";
+    private static final String AlarmDisabled15 = "AlarmDisabled15";
+
 
 
 
@@ -90,6 +93,21 @@ public class SharedPreferenceManager {
 
     public Boolean isALarmDisabled(){
         return pref.getBoolean(AlarmDisabled, true);
+    }
+
+
+    //------------------------------------
+    public void setflagA15(int val){
+        editor.putInt(Morning15 , val);
+        editor.commit();
+    }
+
+    public int getflagA15(){
+        return pref.getInt(Morning15, 0);
+    }
+
+    public Boolean isALarmDisabled15(){
+        return pref.getBoolean(AlarmDisabled15, true);
     }
 
 }
