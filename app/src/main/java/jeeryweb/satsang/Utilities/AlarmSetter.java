@@ -350,7 +350,7 @@ public class AlarmSetter {
         int h2 = Integer.parseInt(s2.split(":")[0]);
         int m2 = Integer.parseInt(s2.split(":")[1]);
 
-        Log.e(TAG, "isMorning called " + h + " " + h1 + " " + h2);
+        //Log.e(TAG, "isMorning called " + h + " " + h1 + " " + h2);
         //compare with evening times
         if (h > h2)
             return true;
@@ -421,7 +421,7 @@ public class AlarmSetter {
             }
         }
 
-        Log.e(TAG, "isMorning called " + h + " " + h1 + " " + h2);
+        //Log.e(TAG, "isMorning called " + h + " " + h1 + " " + h2);
         //compare with evening times
         if (h > h2)
             return true;
@@ -469,7 +469,7 @@ public class AlarmSetter {
                 0);
 
         alarmManager.cancel(pendingIntent);
-        Log.e("AlarmFuck", "Alarm cancelled");
+        Log.e("AlarmDebug", "Alarm cancelled");
     }
 
 }
