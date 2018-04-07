@@ -434,7 +434,8 @@ public class AlarmSetter {
         int h2 = Integer.parseInt(s2.split(":")[0]);
         int m2 = Integer.parseInt(s2.split(":")[1]);
 
-        Log.e(TAG, "Ismorning called with para "+h+" "+h1+" "+h2);
+        //Log.e(TAG, "isMorning called " + h + " " + h1 + " " + h2);
+
         //compare with evening times
         if (h > h2)
             return true;
@@ -503,7 +504,11 @@ public class AlarmSetter {
                 h2 = h2 - 1;
             }
         }
-        Log.e(TAG, "Ismorning called with para "+h+" "+h1+" "+h2);
+
+
+
+        //Log.e(TAG, "isMorning called " + h + " " + h1 + " " + h2);
+
         //compare with evening times
         if (h > h2)
             return true;
@@ -551,7 +556,9 @@ public class AlarmSetter {
                 0);
 
         alarmManager.cancel(pendingIntent);
+
         Log.e(TAG, "15). Alarm is cancelled");
+
     }
 
 }

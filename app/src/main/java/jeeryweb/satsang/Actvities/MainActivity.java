@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView alarmSetConfirmer ,alarmSetConfirmer15;
 
+
     //Methods*******************************************************************************************
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -270,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
         mPrayerTimeView.setText(op);
     }
 
+
     //update alarm display views
     public void updateAlarmDisplaViews(){
 
@@ -298,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 
 
     /**
@@ -431,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
 
     /* class for recieving data from Location updater Service
 
-    */
+     */
     public class mRecievrfromService extends BroadcastReceiver {
 
 
@@ -539,6 +542,7 @@ public class MainActivity extends AppCompatActivity {
             // Reset. Enable the Fetch Address button and stop showing the progress bar.
             mAddressRequested = false;
 
+
         }
     }
 
@@ -572,3 +576,4 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
+
