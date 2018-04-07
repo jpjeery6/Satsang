@@ -5,4 +5,11 @@
     <color name="colorAccent">#FF4081</color>
     <color name="colorBack">#87cde0</color>
     <color name="colorWhite">#FFFFFF</color>
+
+
+    <color name="colorLightGrayLine">#EDEDED</color>
+    <color name="colorDeepPurple">#7C4DFF</color>
+    <color name="colorMaterialYellow">#FFB300</color>
+    <color name="colorMaterialGreen">#00BFA5</color>
+    <color name="colorWhitePress">#AAA</color>
 </resources>

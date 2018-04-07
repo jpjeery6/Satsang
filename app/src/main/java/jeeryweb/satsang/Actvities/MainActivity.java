@@ -46,13 +46,13 @@ import jeeryweb.satsang.Utilities.SharedPreferenceManager;
 
 public class MainActivity extends AppCompatActivity  {
 
-//attributes****************************************************************************************
+    //attributes****************************************************************************************
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
     private static final String ADDRESS_REQUESTED_KEY = "address-request-pending";
     private static final String LOCATION_ADDRESS_KEY = "location-address";
 
-   //Location objects
+    //Location objects
     private FusedLocationProviderClient mFusedLocationClient;
     private Location mLastLocation;
     /**
@@ -60,11 +60,9 @@ public class MainActivity extends AppCompatActivity  {
      * address and false when the address (or an error message) is delivered.
      */
     private boolean mAddressRequested;
-
     private String mAddressOutput;
     private String mAddressState;
     private String mPrayingTime;
-    private String myLocationDistrict;
     /**
      * Receiver registered with this activity to get the response from FetchAddressIntentService.
      */
@@ -72,7 +70,6 @@ public class MainActivity extends AppCompatActivity  {
 
     //widgets
     private TextView mLocationAddressTextView, mStateNameView , mPrayerTimeView;
-    private ProgressBar mProgressBar;
     private Switch aSwitch;
 
     public FileReader fileReader;
@@ -81,7 +78,7 @@ public class MainActivity extends AppCompatActivity  {
     mRecievrfromService mrecievrfromService;
     Context c;
 
-//Methods*******************************************************************************************
+    //Methods*******************************************************************************************
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,16 +87,12 @@ public class MainActivity extends AppCompatActivity  {
         mResultReceiver = new AddressResultReceiver(new Handler());
 
         mLocationAddressTextView = (TextView) findViewById(R.id.location_address_view);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mStateNameView = (TextView) findViewById(R.id.location_state);
         mPrayerTimeView = (TextView) findViewById(R.id.prayer_time_view);
 
         aSwitch  =(Switch)findViewById(R.id.simpleSwitch);
 
         /*  Initilaize classed */
-        mFetchAddressButton = (Button) findViewById(R.id.fetch_address_button);
-        mStateName = (TextView) findViewById(R.id.prayer_time_view);
-
         fileReader = new FileReader();
         sharedPref = new SharedPreferenceManager(this);
         mResultReceiver = new AddressResultReceiver(new Handler());
@@ -112,26 +105,26 @@ public class MainActivity extends AppCompatActivity  {
 
         aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-           public void onCheckedChanged(CompoundButton compoundButton, boolean bChecked) {
-                              if (bChecked) {
-                                     sharedPref.setAlarmDisabled();
+            public void onCheckedChanged(CompoundButton compoundButton, boolean bChecked) {
+                if (bChecked) {
+                    sharedPref.setAlarmDisabled();
 
-                                  try {
-                                      alarmSetter.setAlarm(false);
-                                  } catch (ParseException e) {
-                                      e.printStackTrace();
-                                  }
-                              } else {
-                                     sharedPref.unsetAlarmDisabled();
-                                  try {
-                                      alarmSetter.setAlarm(false);
-                                  } catch (ParseException e) {
-                                      e.printStackTrace();
-                                  }
+                    try {
+                        alarmSetter.setAlarm(false);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    sharedPref.unsetAlarmDisabled();
+                    try {
+                        alarmSetter.setAlarm(false);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
 
-                                  }
-                         }
-      });
+                }
+            }
+        });
 
 
         IntentFilter intentFilter = new IntentFilter();
@@ -144,12 +137,11 @@ public class MainActivity extends AppCompatActivity  {
         c = this;
         // Set defaults, then update using values stored in the Bundle.
         mAddressRequested = false;
-        myLocationDistrict = "";
+        mAddressOutput = "";
         updateValuesFromBundle(savedInstanceState);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        updateUIWidgets();
 
     }
     private boolean isServiceRunning(Class<?> serviceClass) {
@@ -195,46 +187,16 @@ public class MainActivity extends AppCompatActivity  {
             // Check savedInstanceState to see if the location address string was previously found
             // and stored in the Bundle. If it was found, display the address string in the UI.
             if (savedInstanceState.keySet().contains(LOCATION_ADDRESS_KEY)) {
-                myLocationDistrict = savedInstanceState.getString(LOCATION_ADDRESS_KEY);
-                mLocationAddressTextView.setText(myLocationDistrict);
+                mAddressOutput = savedInstanceState.getString(LOCATION_ADDRESS_KEY);
+                displayAddressOutput();
             }
         }
     }
 
-    /**
-     * Runs when user clicks the Fetch Address button.
-     */
-    @SuppressWarnings("unused")
-    public void fetchAddressButtonHandler(View view) {
-        if (mLastLocation != null) {
-            startIntentService();
-            Log.e("start","service started on button press");
-            return;
-        }
-        // If we have not yet retrieved the user location, we process the user's request by setting
-        // mAddressRequested to true. As far as the user is concerned, pressing the Fetch Address button
-        // immediately kicks off the process of getting the address.
-        mAddressRequested = true;
-        updateUIWidgets();
-    }
-
-    /**
-     * Creates an intent, adds location data to it as an extra, and starts the intent service for
-     * fetching an address.
-     */
     private void startIntentService() {
         Intent intent = new Intent(this, FetchAddressIntentService.class);
-
         intent.putExtra(ConstantsForGeocoding.RECEIVER, mResultReceiver);
         intent.putExtra(ConstantsForGeocoding.LOCATION_DATA_EXTRA, mLastLocation);
-
-        // Pass the result receiver as an extra to the service.
-        intent.putExtra(ConstantsForGeocoding.RECEIVER, mResultReceiver);
-        // Pass the location data as an extra to the service.
-        intent.putExtra(ConstantsForGeocoding.LOCATION_DATA_EXTRA, mLastLocation);
-        // Start the service. If the service isn't already running, it is instantiated and started
-        // (creating a process for it if needed); if it is running then it remains running. The
-        // service kills itself automatically once all intents are processed.
 
         startService(intent);
     }
@@ -261,6 +223,7 @@ public class MainActivity extends AppCompatActivity  {
                             showSnackbar(getString(R.string.no_geocoder_available));
                             return;
                         }
+
                         // If the user pressed the fetch address button before we had the location,
                         // this will be set to true indicating that we should kick off the intent
                         // service after fetching the location.
@@ -282,7 +245,6 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     /**
-
      * Updates the address in the UI.
      */
     private void displayAddressOutput() {
@@ -307,16 +269,13 @@ public class MainActivity extends AppCompatActivity  {
     /**
      * Toggles the visibility of the progress bar. Enables or disables the Fetch Address button.
      */
-    private void updateUIWidgets() {
-        if (mAddressRequested) {
-            mProgressBar.setVisibility(ProgressBar.VISIBLE);
 
-        } else {
-            mProgressBar.setVisibility(ProgressBar.GONE);
-        }
+    /**
+     * Shows a toast with the given text.
+     */
+    private void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
-
-
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -324,17 +283,32 @@ public class MainActivity extends AppCompatActivity  {
         savedInstanceState.putBoolean(ADDRESS_REQUESTED_KEY, mAddressRequested);
 
         // Save the address string.
-        savedInstanceState.putString(LOCATION_ADDRESS_KEY, myLocationDistrict);
+        savedInstanceState.putString(LOCATION_ADDRESS_KEY, mAddressOutput);
         super.onSaveInstanceState(savedInstanceState);
     }
 
 
 
+    private void showSnackbar(final String text) {
+        View container = findViewById(android.R.id.content);
+        if (container != null) {
+            Snackbar.make(container, text, Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+
+    private void showSnackbar(final int mainTextStringId, final int actionStringId,
+                              View.OnClickListener listener) {
+        Snackbar.make(findViewById(android.R.id.content),
+                getString(mainTextStringId),
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(getString(actionStringId), listener).show();
+    }
 
 
     /* class for recieving data from Location updater Service
 
-    */
+     */
     public class mRecievrfromService extends  BroadcastReceiver{
 
 
@@ -371,13 +345,14 @@ public class MainActivity extends AppCompatActivity  {
         AddressResultReceiver(Handler handler) {
             super(handler);
         }
+
         /**
          *  Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
          */
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
-            // Display the address string or an error message sent from the intent service.
 
+            // Display the address string or an error message sent from the intent service.
             mAddressOutput = resultData.getString(ConstantsForGeocoding.RESULT_DATA_KEY);
             Log.e(TAG+":::","val "+mAddressOutput);
 
@@ -427,47 +402,12 @@ public class MainActivity extends AppCompatActivity  {
 
                 }
                 Log.e(TAG, "val "+"Address Found In mainactivity");
-
-            myLocationDistrict = resultData.getString(ConstantsForGeocoding.RESULT_DATA_KEY);
-
-            Log.e(TAG+":::", myLocationDistrict);
-            fileReader.read1(c);
-            fileReader.read2(c);
-
-           String statenameAsInDatabase = fileReader.queryWithDistrict(myLocationDistrict);
-
-           if(myLocationDistrict!=null)
-               mLocationAddressTextView.setText(myLocationDistrict);
-
-           if(statenameAsInDatabase!=null && statenameAsInDatabase.length()!=0 ) {
-
-               Log.e("state name=", String.valueOf(statenameAsInDatabase.length()));
-
-               SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-               String currentDate = simpleDateFormat.format(new Date());
-               int month = Integer.parseInt(currentDate.split("-")[1]);
-
-               //Log.e("current  date=", currentDate + " " + month);
-               String prayingTime = fileReader.queryWithState(statenameAsInDatabase, month);
-
-               mStateName.setText(statenameAsInDatabase + " " + prayingTime);
-           }
-           else {
-               mStateName.setText("No Satsang Mandir nearby");
-           }
-            // Show a toast message if an address was found.
-            if (resultCode == ConstantsForGeocoding.SUCCESS_RESULT) {
-                showToast(getString(R.string.address_found));
             }
             displayAddressOutput();
             // Reset. Enable the Fetch Address button and stop showing the progress bar.
             mAddressRequested = false;
-            updateUIWidgets();
         }
     }
-
-
-
 
 
 
@@ -563,27 +503,5 @@ public class MainActivity extends AppCompatActivity  {
 
         }
     }
-
-
-    private void showSnackbar(final String text) {
-        View container = findViewById(android.R.id.content);
-        if (container != null) {
-            Snackbar.make(container, text, Snackbar.LENGTH_LONG).show();
-        }
-    }
-
-
-    private void showSnackbar(final int mainTextStringId, final int actionStringId,
-                              View.OnClickListener listener) {
-        Snackbar.make(findViewById(android.R.id.content),
-                getString(mainTextStringId),
-                Snackbar.LENGTH_INDEFINITE)
-                .setAction(getString(actionStringId), listener).show();
-    }
-
-    private void showToast(String text) {
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
-    }
-
 
 }

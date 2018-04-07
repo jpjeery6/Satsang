@@ -10,7 +10,7 @@
 
 
     <style name="SplashTheme" parent="AppTheme">
-        <item name="android:windowBackground">@drawable/ic_launcher_background</item>
+        <item name="android:windowBackground">@drawable/splash</item>
     </style>
 
 </resources>
