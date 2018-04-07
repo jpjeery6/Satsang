@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import jeeryweb.satsang.Services.AlarmBroadcastReciever;
@@ -21,11 +22,12 @@ public class AlarmSetter {
     final private String TAG = "AlarmDebug";
     public SharedPreferenceManager sharedPref;
     Context _c;
-    SimpleDateFormat sdfDate, sdf;
+    SimpleDateFormat sdfDate, sdfDatePlusTime;
     private AlarmManager alarmMgr;
     private PendingIntent alarmIntent;
     private int requestCode, requestCode15;
-    Intent intent;
+    public String AlarmFormat = "alarmformat";
+
 
     public AlarmSetter(Context c) {
         this._c = c;
@@ -33,7 +35,7 @@ public class AlarmSetter {
         requestCode = 234324243;
         requestCode15 = 230000000;
         sdfDate = new SimpleDateFormat("yyyy:MM:dd"); //for date
-        sdf = new SimpleDateFormat("yyyy:MM:dd HH:mm"); //for time
+        sdfDatePlusTime = new SimpleDateFormat("yyyy:MM:dd HH:mm"); //for time
 
     }
 
@@ -47,12 +49,10 @@ public class AlarmSetter {
                 cancelAlarm();
                 sharedPref.setflagA(0);
             }
-            Log.e(TAG, "Alarm is disabbled!. So return to call function");
+            Log.e(TAG, " Alarm not set as setting is disallowed");
             return;
         }
-        alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
-        intent = new Intent(_c, AlarmBroadcastReciever.class);
-        alarmIntent = PendingIntent.getBroadcast(_c, requestCode, intent, 0);
+
 
         if (cont) {
 
@@ -66,11 +66,15 @@ public class AlarmSetter {
                 long setTime;
                 Date d = new Date();
                 String currentDate = sdfDate.format(d);
+
                 String temp = currentDate + " " + h + ":" + m;
-                Date date = sdf.parse(temp);
+                Date date = sdfDatePlusTime.parse(temp);
                 setTime = date.getTime();
 
-
+                alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
+                intent.putExtra(AlarmFormat, 0);  //0 = current, 15 = 15 mins before alarm
+                alarmIntent = PendingIntent.getBroadcast(_c, requestCode, intent, 0);
                 alarmMgr.set(AlarmManager.RTC_WAKEUP,
                         setTime, alarmIntent);
 
@@ -80,9 +84,7 @@ public class AlarmSetter {
 
             } else { //evening already set
                 Log.e(TAG, "Evening prayer ALarm was called");
-                alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
-                Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
-                alarmIntent = PendingIntent.getBroadcast(_c, requestCode, intent, 0);
+
 
                 String s = sharedPref.getPrayTime().split(",")[0];
                 int h = Integer.parseInt(s.split(":")[0]);
@@ -92,11 +94,15 @@ public class AlarmSetter {
 
 
                 Date d = new Date();
-                String currentDate = sdfDate.format(d);
+                String currentDate = parseDate(d);
                 String temp = currentDate + " " + h + ":" + m;
-                Date date = sdf.parse(temp);
+                Date date = sdfDatePlusTime.parse(temp);
                 setTime = date.getTime();
 
+                alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
+                intent.putExtra(AlarmFormat, 0);  //0 = current, 15 = 15 mins before alarm
+                alarmIntent = PendingIntent.getBroadcast(_c, requestCode, intent, 0);
 
                 alarmMgr.set(AlarmManager.RTC_WAKEUP,
                         setTime, alarmIntent);
@@ -120,11 +126,29 @@ public class AlarmSetter {
         Boolean isCloserToMorning = IsCloserToMorning();
         Log.e(TAG, "isclosertoMornign is  "+isCloserToMorning);
         int h, m;
-
+        String currentDate;
         if (isCloserToMorning) {
             String s = sharedPref.getPrayTime().split(",")[0];
             h = Integer.parseInt(s.split(":")[0]);
             m = Integer.parseInt(s.split(":")[1]);
+
+            s = sharedPref.getPrayTime().split(",")[1];
+            int h_temp = Integer.parseInt(s.split(":")[0]);
+            int m_temp = Integer.parseInt(s.split(":")[1]);
+
+            Date d = new Date();
+            SimpleDateFormat s_temp = new SimpleDateFormat("HH");
+            int temp1 = Integer.parseInt(s_temp.format(d));  //get current hour
+            if(temp1 > h_temp){   //check if current hour is next day or presetn day
+                Date d_temp  = new Date();
+                currentDate = parseDate(d_temp);
+            }else{
+                Date d_temp  = new Date();
+                currentDate = sdfDate.format(d_temp);
+            }
+
+
+
             sharedPref.setflagA(1);
             Toast.makeText(_c, "Alarm set for your next Morning time Prayer",Toast.LENGTH_SHORT).show();
             Log.e(TAG, "ALarm set for morning time");
@@ -132,6 +156,8 @@ public class AlarmSetter {
             String s = sharedPref.getPrayTime().split(",")[1];
             h = Integer.parseInt(s.split(":")[0]);
             m = Integer.parseInt(s.split(":")[1]);
+            Date d = new Date();
+            currentDate = sdfDate.format(d);
             sharedPref.setflagA(2);
             Toast.makeText(_c, "Alarm set for your next Evening time Prayer",Toast.LENGTH_SHORT).show();
             Log.e(TAG, "ALarm set for Evening time");
@@ -139,12 +165,16 @@ public class AlarmSetter {
 
         long setTime;
 
-        Date d = new Date();
-        String currentDate = sdfDate.format(d);
+
         String temp = currentDate+" "+h+":"+m;
 
-        Date date = sdf.parse(temp);
+        Date date = sdfDatePlusTime.parse(temp);
         setTime = date.getTime();
+
+        alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
+        intent.putExtra(AlarmFormat, 0);  //0 = current, 15 = 15 mins before alarm
+        alarmIntent = PendingIntent.getBroadcast(_c, requestCode, intent, 0);
 
         alarmMgr.set(AlarmManager.RTC_WAKEUP,
                 setTime, alarmIntent);
@@ -152,6 +182,17 @@ public class AlarmSetter {
         Log.e(TAG, "ALarm set at time " + setTime);
         Log.e(TAG, "-----------------------------------------------------------------------------------------------");
 
+    }
+
+    //checking for the need for a date increment
+    private String parseDate(Date d) {
+
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        c.add(Calendar.DATE, 1);
+        d = c.getTime();
+        return sdfDate.format(d);
     }
 
     public void setAlarm15(Boolean cont) throws ParseException {
@@ -166,9 +207,7 @@ public class AlarmSetter {
             Log.e(TAG, " 15) Alarm not set as setting is disallowed");
             return;
         }
-        alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
-        alarmIntent = PendingIntent.getBroadcast(_c, requestCode15, intent, 0);
+
         if (cont) {
             Log.e(TAG, "Contniuos is "+cont);
 
@@ -197,11 +236,14 @@ public class AlarmSetter {
                 String currentDate = sdfDate.format(d);
                 String temp = currentDate + " " + h + ":" + m;
 
-                Date date = sdf.parse(temp);
+                Date date = sdfDatePlusTime.parse(temp);
                 setTime = date.getTime();
 
-
-                alarmMgr.set(AlarmManager.RTC_WAKEUP,
+                alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
+                intent.putExtra(AlarmFormat, 15);  //0 = current, 15 = 15 mins before alarm
+                alarmIntent = PendingIntent.getBroadcast(_c, requestCode15, intent, 0);
+                 alarmMgr.set(AlarmManager.RTC_WAKEUP,
                         setTime, alarmIntent);
 
                 sharedPref.setflagA(2);
@@ -231,12 +273,15 @@ public class AlarmSetter {
 
 
                 Date d = new Date();
-                String currentDate = sdfDate.format(d);
+                String currentDate = parseDate(d);
                 String temp = currentDate + " " + h + ":" + m;
-                Date date = sdf.parse(temp);
+                Date date = sdfDatePlusTime.parse(temp);
                 setTime = date.getTime();
 
-
+                alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
+                intent.putExtra(AlarmFormat, 15);  //0 = current, 15 = 15 mins before alarm
+                alarmIntent = PendingIntent.getBroadcast(_c, requestCode15, intent, 0);
                 alarmMgr.set(AlarmManager.RTC_WAKEUP,
                         setTime, alarmIntent);
 
@@ -257,7 +302,7 @@ public class AlarmSetter {
         Boolean isCloserToMorning = IsCloserToMorning15();
         Log.e(TAG, "15). isCLoserToMorning variable is "+isCloserToMorning);
         int h, m;
-
+        String currentDate;
         if (isCloserToMorning) {
             String s = sharedPref.getPrayTime().split(",")[0];
             h = Integer.parseInt(s.split(":")[0]);
@@ -276,6 +321,53 @@ public class AlarmSetter {
                 }
             }
 
+            s = sharedPref.getPrayTime().split(",")[1];
+            int h_temp = Integer.parseInt(s.split(":")[0]);
+            int m_temp = Integer.parseInt(s.split(":")[1]);
+
+            if (m_temp >= 15) {
+                m_temp = m_temp - 15;
+            } else {
+                int temp = 15 - m_temp;
+                m_temp = 60 - temp;
+                if (h_temp == 0) {
+                    h_temp = 23;
+
+                } else {
+                    h_temp = h_temp - 1;
+                }
+            }
+
+            Date d = new Date();
+            SimpleDateFormat s_temp = new SimpleDateFormat("HH:mm");
+            String temp1 = s_temp.format(d);  //get current hour
+            String temp2[] =  temp1.split(":");
+            int curr_hour = Integer.parseInt(temp2[0]);
+            int curr_min = Integer.parseInt(temp2[1]);
+
+            if (curr_min >= 15) {
+                curr_min = curr_min - 15;
+            } else {
+                int temp = 15 - curr_min;
+                curr_min = 60 - temp;
+                if (curr_hour == 0) {
+                    curr_hour = 23;
+
+                } else {
+                    curr_hour = curr_hour - 1;
+                }
+            }
+
+
+
+            if(curr_hour > h_temp){   //check if current hour is next day or presetn day
+                Date d_temp= new Date();
+                currentDate =  parseDate(d_temp);
+            }else{
+
+                Date d_temp  = new Date();
+                currentDate = sdfDate.format(d_temp);
+            }
             sharedPref.setflagA15(1);
             Toast.makeText(_c, "ALarm set for reminding you 15 mins early to your next Morning prayer",Toast.LENGTH_SHORT).show();
             Log.e(TAG,  "15) Morning alarm is set");
@@ -295,6 +387,8 @@ public class AlarmSetter {
                     h = h - 1;
                 }
             }
+            Date d = new Date();
+            currentDate = sdfDate.format(d);
             sharedPref.setflagA15(2);
             Toast.makeText(_c, "ALarm set for reminding you 15 mins early to your next Evening prayer",Toast.LENGTH_SHORT).show();
             Log.e(TAG,  "15) Evening alarm is set at ");
@@ -302,12 +396,15 @@ public class AlarmSetter {
 
         long setTime;
 
-        Date d = new Date();
-        String currentDate = sdfDate.format(d);
+
         String temp = currentDate+" "+h+":"+m;
-        Date date = sdf.parse(temp);
+        Date date = sdfDatePlusTime.parse(temp);
         setTime = date.getTime();
 
+        alarmMgr = (AlarmManager) _c.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(_c, AlarmBroadcastReciever.class);
+        intent.putExtra(AlarmFormat, 15);  //0 = current, 15 = 15 mins before alarm
+        alarmIntent = PendingIntent.getBroadcast(_c, requestCode15, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP,
                 setTime, alarmIntent);
 

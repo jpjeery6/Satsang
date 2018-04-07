@@ -107,12 +107,14 @@ public class MainActivity extends AppCompatActivity {
         //set listener for swicth button
 
         disableSwitch.setChecked(sharedPref.isALarmDisabled());
-
+        updateAlarmDisplaViews();
         disableSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean bChecked) {
                 if (bChecked) {
+
                     //alarm disable yes
+                    Log.e("AlarmDebug","alarm disablled by switch");
                     sharedPref.setAlarmDisabled();
 
                       // continious is false //will be false alays on first trogger
@@ -292,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
             alarmSetConfirmer15.setText("15 minutes before Morning Praying Reminder Set");
 
         if(sharedPref.getflagA15()==2)
-            alarmSetConfirmer15.setText("15 minutes before Morning Praying Reminder Set");
+            alarmSetConfirmer15.setText("15 minutes before Evening Praying Reminder Set");
 
 
     }
@@ -519,6 +521,7 @@ public class MainActivity extends AppCompatActivity {
                     sharedPref.SavePrayTime(mPrayingTime);
 
                     try {
+                        alarmSetter.setAlarm(false);
                         alarmSetter.setAlarm(false);
                     } catch (ParseException e) {
                         Log.e(TAG, "error in alarmservice");

@@ -25,10 +25,16 @@ public class AlarmBroadcastReciever extends BroadcastReceiver {
    MediaPlayer mp;
    AlarmSetter alarmSetter;
    SharedPreferenceManager sh;
-   final String TAG="ALarmDebug";
+    final private String TAG = "AlarmDebug";
+    public String AlarmFormat = "alarmformat";
    @Override
    public void onReceive(Context context, Intent intent) {
-
+       int formatOfALarm=0;
+       if (intent.hasExtra(AlarmFormat)) {
+           formatOfALarm = intent.getIntExtra(AlarmFormat,0);
+       } else {
+           throw new IllegalArgumentException("Activity cannot find  extras " + AlarmFormat);
+       }
        alarmSetter = new AlarmSetter(context);
        sh = new SharedPreferenceManager(context);
 
@@ -64,7 +70,11 @@ public class AlarmBroadcastReciever extends BroadcastReceiver {
        Toast.makeText(context, "Alarm....", Toast.LENGTH_LONG).show();
 
        try {
-           alarmSetter.setAlarm(true); //mane continious is true
+
+           if(formatOfALarm==0)
+                alarmSetter.setAlarm(true); //mane continious is true
+           if(formatOfALarm==15)
+                alarmSetter.setAlarm15(true);
        } catch (ParseException e) {
            Log.e(TAG, "error in alarmservice");
            e.printStackTrace();
