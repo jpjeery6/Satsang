@@ -18,8 +18,10 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
@@ -74,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
      * Receiver registered with this activity to get the response from FetchAddressIntentService.
      */
     private AddressResultReceiver mResultReceiver;
+    private Toolbar mTopToolbar;
     //widgets
     private TextView mLocationAddressTextView, mStateNameView, mPrayerTimeView;
     private ProgressBar mProgressBar;
@@ -85,6 +88,10 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(mTopToolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         mResultReceiver = new AddressResultReceiver(new Handler());
 
@@ -455,17 +462,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    public void startActivityforTunePicker(View view){
-        Intent intent = new Intent(this, alarmTunePicker.class);
-
-        startActivity(intent);
-    }
-    public void startActivityforSearch(View view){
-
-
-       Intent intent = new Intent(this, SearchActivity.class);
-       startActivity(intent);
-    }
 
     public void startActivityforXXXX(View view){
 
@@ -621,6 +617,36 @@ public class MainActivity extends AppCompatActivity {
                 displayAddressOutput();
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_search) {
+            Intent intent = new Intent(this, SearchActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        if (id == R.id.action_setting) {
+            Intent intent = new Intent(this, AlarmTunePicker.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 }

@@ -163,7 +163,17 @@ public class FetchAddressIntentService extends IntentService{
         Bundle bundle = new Bundle();
         //mainoulate district
 
-        if(message.split(" ").length>=1)
+        //geocoder error handle*****************************
+        //**************************************************
+        //**************************************************
+        //change done from here
+
+        if(message == null) {
+            message = "geocoder failed";
+            return;
+        }
+        //change done upto here
+        else if(message.split(" ").length>=1)
             message = message.split(" ")[0];
 
         bundle.putString(ConstantsForGeocoding.RESULT_DATA_KEY, message);

@@ -21,4 +21,5 @@
     <string name="zone_promt">Select Zone</string>
     <string name="district_select">Select District</string>
     <string name="url">http://satsang.org.in/index.php?p=prayertime</string>
+    <string name="title_activity_main2">Main2Activity</string>
 </resources>

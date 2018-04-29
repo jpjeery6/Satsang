@@ -6,9 +6,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
-    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL"/>
+    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
     <uses-permission android:name="android.permission.INTERNET" />
-
 
     <application
         android:allowBackup="true"
@@ -28,9 +27,7 @@
         </activity>
         <activity
             android:name=".Actvities.AlarmActivity"
-            android:theme="@style/SplashTheme">
-
-        </activity>
+            android:theme="@style/SplashTheme"></activity>
 
         <service android:name=".Services.LocationUpdaterService" />
         <service
@@ -46,15 +43,22 @@
             android:name=".Services.AlarmBroadcastReciever"
             android:enabled="true"
             android:process=":remote" />
-
         <receiver android:name=".Services.TimeChangedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.TIME_SET" />
             </intent-filter>
         </receiver>
 
-        <activity android:name=".Actvities.alarmTunePicker" />
-        <activity android:name=".Actvities.SearchActivity"></activity>
+        <activity
+            android:name=".Actvities.AlarmTunePicker"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Actvities.MainActivity" />
+
+        </activity>
+
+        <activity android:name=".Actvities.SearchActivity" />
     </application>
 
 </manifest>
